@@ -29,17 +29,21 @@ The `/home/m280data/NYCHVS` folder on teaching server contains a data set from t
 Please, do **not** put these data files into Git; they are big. Also do **not** copy them into your directory. Just read from the data folder `/home/m280data/NYCHVS` directly. Use Bash commands to answer following questions.
 
 1. Display the first few lines of `NYCHVS_1991.csv`.
-`$head NYCHVS_1991.csv`
+```{bash}
+  head NYCHVS_1991.csv
+```
 
 2. Display number of lines in each `csv` file.
-`
-for name in /home/m280data/NYCHVS/*.csv
-do
-awk 'END { print NR }' $name
-done
-`
+
+```{bash}
+wc -l /home/m280data/NYCHVS/*.csv
+```
 
 3. Display the 3 files that have the least number of lines
+
+```{bash}
+wc -l /home/m280data/NYCHVS/*.csv | sort | head -3
+```
 
 4. What's the output of following bash script?
     ```{bash, eval=FALSE}
@@ -49,7 +53,7 @@ done
       done
     ```
 
-`
+```{}
 /home/m280data/NYCHVS/NYCHVS_1991.csv
 /home/m280data/NYCHVS/NYCHVS_1993.csv
 /home/m280data/NYCHVS/NYCHVS_1996.csv
@@ -60,9 +64,12 @@ done
 /home/m280data/NYCHVS/NYCHVS_2011.csv
 /home/m280data/NYCHVS/NYCHVS_2014.csv
 /home/m280data/NYCHVS/NYCHVS_2017.csv
-`
+```
 
 5. What unique values does the second variable `borough` take in `NYCHVS_1991.csv`? Tabulate how many times each value appears.
+```{bash}
+head -3 /home/m280data/NYCHVS/NYCHVS_1991.csv
+```
 
 ## Q3. More fun with shell
 
@@ -71,6 +78,18 @@ done
     curl https://www.gutenberg.org/files/1342/1342.txt > pride_and_prejudice.txt
     ```
 Do **not** put this text file `pride_and_prejudice.txt` in Git. Using a `for` loop, how would you tabulate the number of times each of the four characters is mentioned?
+
+```{bash}
+declare -a list=("Elizabeth"
+                 "Jane"
+                 "Lydia"
+                 "Darcy")
+  for name in "${list[@]}"
+    do
+      echo $name
+      grep -wo $name pride_and_prejudice.txt | wc -l
+    done
+```
 
 2. What's the difference between the following two commands?
     ```{bash eval=FALSE}
@@ -81,10 +100,9 @@ Do **not** put this text file `pride_and_prejudice.txt` in Git. Using a `for` lo
     echo 'hello, world' >> test2.txt
     ```
 
-`
-> takes the output of one command and plugs it into a file. >> adds the output of one command to a file.
-The first one displays 'hello, world' before it is piped into the test1.txt file. The second one directly adds "echo 'hello, world'" to the test2.txt file.
-`
+```{}
+The first one displays 'hello, world' before it is piped into the test1.txt file (rewrites entire file to 'hello, world'). The second one directly appends "echo 'hello, world'" to the test2.txt file.
+```
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
     ```{bash eval=FALSE}
@@ -99,9 +117,9 @@ Using `chmod` make the file executable by the owner, and run
     ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 `
-The first line of the shell script tells the loader what type of program to execute the file with. $1 $2 $3 are called positional parameters. The output are the first $2 lines from $1 file, which is piped into the tail command so we so the last $3 lines of the head output.
-##chmod 751 filename
-`
+```{}
+The first line of the shell script tells the loader what type of program to execute the file with. $1 $2 $3 are called positional parameters. The output are the first $2 lines from $1 file, which is piped into the tail command so we so the last $3 lines of the head output. So in this example, we print the first 20 lines of pride_and_prejudice.txt and then the last 5 lines of the head output. Overall, this is lines 15-20 of the file.
+```
 
 ## Q4. R Batch Run
 
@@ -112,6 +130,9 @@ $$
   \frac{\sum_{r=1}^{\text{rep}} (\widehat \mu_r - \mu_{\text{true}})^2}{\text{rep}}
 $$
 for both methods.
+```{bash}
+Rscript runSim.R seed=398 n=100 dist="t1" rep=150
+```
 
 2. Modify the [`autoSim.R`](http://hua-zhou.github.io/teaching/biostatm280-2019winter/slides/02-linux/autoSim.R) script to run simulations with combinations of sample sizes `nVals = seq(100, 500, by=100)` and distributions `distTypes = c("gaussian", "t1", "t5")` and write output to appropriately named files. Use `rep = 50`, and `seed = 280`. 
 
