@@ -90,7 +90,8 @@
 	- `eval=FALSE` in your code chunks 
   	prevents displaying output. Either print output or write answers. 
  Make sure your collaborators can easily run your code.   	
- 	- `"~/biostat-m280-2019-winter/hw1/"`
+ 
+ 	- `"~/biostat-m280-2019-winter/hw1/"` in `outputSim.R` invokes error. Use `"./"` to indicate the current directory.
 
  	- Include `bash` script that runs your files `autoSim.R`, `outputSim.R`, ... 
 	
