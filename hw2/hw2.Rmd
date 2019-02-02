@@ -37,6 +37,29 @@ The FizzBuzz test is a common programming interview question used to establish i
 
 2. Use your FizzBuzz function to display the correct output for a variety of inputs, make sure to show what happens for both good and bad input. 
 
+```{R}
+fizzbuzz <- function(input, ...){
+  loopList <- list(input, ...)
+  for (integer in loopList){
+    if (class(integer) != "numeric") stop("Item in input should be a numeric type")
+    if (integer %% 3 == 0 & integer %% 5 == 0){
+      print("FizzBuzz")
+      next
+    }
+    if (integer %% 3 == 0){
+      print("Fizz")
+    }
+    if (integer %% 5 == 0){
+      print("Buzz")
+    }
+  }
+}
+
+list_1 <- list(3, 15, 5, 9, 9.1)
+fizzbuzz(3, 15.2)
+fizzbuzz(list_1)
+```
+
 ## Q3. Rcpp
 
 1. Read the online book [_Rcpp For Everyone_](https://teuder.github.io/rcpp4everyone_en/) by Masaki E. Tsuda.
