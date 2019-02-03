@@ -71,17 +71,25 @@ src <-
 "#include <Rcpp.h>
 using namespace Rcpp;
 // [[Rcpp::export]]
-double rcpp_fizzbuzz(NumericVector input){
-  for (NumericVector input; (condition); ++i){
-    if (NumericVector input %% NumericVector t3 (3) == 0){
-       Rcout << "Fizz";
+void rcpp_fizzbuzz(NumericVector input){
+  for (int i = 0; i < input.length(); i++) {
+    bool lineprinted = FALSE;
+    if (fmod(input[i], 3.0) == 0.0) {  
+      Rprintf(\"Fizz\");
+      lineprinted = TRUE;
+    }
+    if (fmod(input[i], 5.0) == 0.0) {
+      Rprintf(\"Buzz\");
+      lineprinted = TRUE;
+    }
+    if (lineprinted == TRUE) {
+      Rprintf(\" \\n\");
     }
   }
-
-
 }"
 
 sourceCpp(code = src)
-rcpp_fizzbuzz(3, 5, 11)
+nv <- c(3, 5, 15, 11)
+rcpp_fizzbuzz(nv)
 ```
 
