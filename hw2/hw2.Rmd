@@ -56,7 +56,7 @@ fizzbuzz <- function(input, ...){
 }
 
 list_1 <- list(3, 15, 5, 9, 9.1)
-fizzbuzz(3, 15.2)
+fizzbuzz(3, 5, 15.2)
 fizzbuzz(list_1)
 ```
 
@@ -65,4 +65,23 @@ fizzbuzz(list_1)
 1. Read the online book [_Rcpp For Everyone_](https://teuder.github.io/rcpp4everyone_en/) by Masaki E. Tsuda.
 
 2. Re-do FizzBuzz test using Rcpp. 
+
+```{R}
+src <-
+"#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+double rcpp_fizzbuzz(NumericVector input){
+  for (NumericVector input; (condition); ++i){
+    if (NumericVector input %% NumericVector t3 (3) == 0){
+       Rcout << "Fizz";
+    }
+  }
+
+
+}"
+
+sourceCpp(code = src)
+rcpp_fizzbuzz(3, 5, 11)
+```
 
