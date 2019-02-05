@@ -1,6 +1,6 @@
 language: r
 sudo: false
-script: make hw2.Rmd
+script: make hw2
 cache: packages
 r_packages:
   - rmarkdown
