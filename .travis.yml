@@ -19,3 +19,6 @@ r_packages:
 os:
   - linux
   - osx
+r:
+  -oldrel
+  -release

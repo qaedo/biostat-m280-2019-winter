@@ -3,7 +3,3 @@ hw2: ./hw2/hw2.Rmd
   
 clean:
   rm -rf *.html *.md
-
-R:
-  -oldrel
-  -release
