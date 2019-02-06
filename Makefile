@@ -1,5 +1,5 @@
 hw2: ./hw2/hw2.Rmd
-  Rscript -e 'rmarkdown::render("$<")'
+	Rscript -e 'rmarkdown::render("$<")'
   
 clean:
-  rm -rf *.html *.md
+	rm -rf *.html *.md
