@@ -9,4 +9,5 @@ os:
   - linux
   - osx
 r:
-  -release
+  - oldrel
+  - release
