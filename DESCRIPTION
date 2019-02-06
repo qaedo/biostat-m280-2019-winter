@@ -22,5 +22,6 @@ Imports:
     gridExtra,
     knitr,
     svglite,
-    purrrlyr
+    purrrlyr,
+    Rcpp
 Suggests:
