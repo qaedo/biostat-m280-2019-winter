@@ -4,17 +4,6 @@ script: make hw2
 cache: packages
 r_packages:
   - rmarkdown
-  - neotoma
-  - purrr
-  - ggplot2
-  - plyr
-  - reshape2
-  - mgcv
-  - Bchron
-  - viridis
-  - dplyr
-  - readr
-  - gridExtra
   - Rcpp
 os:
   - linux
