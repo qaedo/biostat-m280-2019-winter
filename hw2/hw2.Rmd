@@ -37,12 +37,11 @@ The FizzBuzz test is a common programming interview question used to establish i
 
 2. Use your FizzBuzz function to display the correct output for a variety of inputs, make sure to show what happens for both good and bad input. 
 
-In order to take multiple arguments (numbers), the ellipsis feature was used. Inputs are put into a list object, which is used in a for loop. If an item in the list is not categorized as numeric type, then the function stops. In each loop, the function cycles through 3 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; there is a nested conditional that tests if the item is equal to 0, and skips the rest of the loop if true. Otherwise it prints "FizzBuzz" and also skips the next 2 conditionals to loop through the next item. The next conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true.
+Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each integer in the input. In each loop, the function cycles through 3 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; there is a nested conditional that tests if the item is equal to 0, and skips the rest of the loop if true. Otherwise it prints "FizzBuzz" and also skips the next 2 conditionals to loop through the next item. The next conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true.
 
 ```{R}
-fizzbuzz <- function(input, ...){
-  loopList <- list(input, ...)
-  for (integer in loopList){
+fizzbuzz <- function(input){
+  for (integer in input){
     if (class(integer) != "numeric")
       stop("Item in input should be a numeric type")
     if (integer %% 3 == 0 & integer %% 5 == 0){
@@ -62,12 +61,10 @@ fizzbuzz <- function(input, ...){
   }
 }
 
-list_1 <- list(3, 15, 5, 9, 9.1)
-fizzbuzz(3, 5, 15.2)
-fizzbuzz(1.0, 3.0, 25, 30)
-fizzbuzz(3, 0)
-fizzbuzz("cat")
+list_1 <- c(3, 15, 5, 9, 9.1)
 fizzbuzz(list_1)
+fizzbuzz(3, 5)
+fizzbuzz("cat")
 ```
 
 ## Q3. Rcpp
