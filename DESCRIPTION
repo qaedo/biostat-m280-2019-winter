@@ -3,25 +3,11 @@ Title: BIOM280 Class Files
 Version: 0.1
 Authors@R: person("Quynh Anh", "Do", email = "qedo@ucla.edu",
                   role = c("aut", "cre"))
-Description: What the package does (one paragraph)
+Description: Assignments for BIOM280 class
 Depends: R (>= 3.1.0)
 License: What license is it under?
 LazyData: true
 Imports:
-    neotoma,
     rmarkdown,
-    purrr,
-    ggplot2,
-    plyr,
-    reshape2,
-    mgcv,
-    Bchron,
-    viridis,
-    dplyr,
-    readr,
-    gridExtra,
-    knitr,
-    svglite,
-    purrrlyr,
     Rcpp
 Suggests:
