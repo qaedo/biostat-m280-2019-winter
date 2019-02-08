@@ -8,20 +8,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<p align="center">
-  <img src="./fizzbuzz.jpg" height="375">
-</p>
-
 ## Q1. Travis CI
 
 1. Read the blog post [_Adding CI To RMarkdown Documents_](http://www.goring.org/resources/Adding_CI_To_RMarkdown.html) by Simon Goring. Understand what is continuous integration (CI) and why we need CI.
 
 2. Set up Travis CI for your homework 2 solution, e.g., `hw2sol.Rmd`. Graders will look for a CI passing badge on the `README.Rmd` page of your repository:
-
-<p align="center">
-  <img src="./passing.svg" height="175">
-</p>
-
 
 ## Q2. FizzBuzz Test
 
@@ -39,46 +30,10 @@ The FizzBuzz test is a common programming interview question used to establish i
 
 Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each object in the input. For each object, if it is not an integer another error message is thrown. In each loop, the function cycles through 4 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; if true it tests if the object is 0; if 0 it prints that value and skips the rest of the if statements via next; if it is a multiple of 3 and 5, but is not 0 then "FizzBuzz" is printed and skips the rest of the if statements via next. The next 2 conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true. The last conditional tests if it is neither a multiple of 3 and 5, and prints the number if true.
 
-```{R}
-fizzbuzz <- function(input){
-  # if input is not a vector, return error
-  if (is.vector(input) == FALSE) stop("Input should be a vector.")
-  # for loop to iterate through numbers in vector object
-  for (number in input){
-    # if number is not an integer, return error
-    if (is.integer(number) == FALSE)
-      stop("Item in input should be an integer.")
-    # test if number is multiple of 3 and 5
-    if (number %% 3 == 0 & number %% 5 == 0){
-      # if number is equal to 0, print 0 and skip rest of iteration
-      if (number == 0){
-        print(0)
-        next
-        # otherwise print FizzBuzz and now skip rest of iteration
-      } else {
-        print("FizzBuzz")
-        next
-      }
-    }
-    # test if number is only multiple of 3
-    if (number %% 3 == 0){
-      print("Fizz")
-    }
-    # test if number is only multiple of 5
-    if (number %% 5 == 0){
-      print("Buzz")
-    }
-    # test if number is neither multiple of 3 and 5
-    if (number %% 5 != 0 & number %% 3 != 0){
-      print(number)
-    }
-  }
-}
+```{bash, error = TRUE}
+cat fizzbuzz.R
 
-# create vector of integer numbers
-list_1 <- c(3L, 15L, 5L, 9L, 7L, 0L)
-fizzbuzz(list_1)
-fizzbuzz(3)
+Rscript fizzbuzz.R
 ```
 
 ## Q3. Rcpp
@@ -87,31 +42,16 @@ fizzbuzz(3)
 
 2. Re-do FizzBuzz test using Rcpp. 
 
-```{R}
-src <-
-"#include <Rcpp.h>
-using namespace Rcpp;
-// [[Rcpp::export]]
-void rcpp_fizzbuzz(NumericVector input){
-  for (int i = 0; i < input.length(); i++) {
-    bool lineprinted = FALSE;
-    if (fmod(input[i], 3.0) == 0.0) {  
-      Rprintf(\"Fizz\");
-      lineprinted = TRUE;
-    }
-    if (fmod(input[i], 5.0) == 0.0) {
-      Rprintf(\"Buzz\");
-      lineprinted = TRUE;
-    }
-    if (lineprinted == TRUE) {
-      Rcout << \" \\n\";
-    } else {
-      Rcout << input[i] << \" \\n\";
-    }
-  }
-}"
+```{bash}
+cat rcpp_fizzbuzz.cpp
+```
 
-sourceCpp(code = src)
+```{R}
+# install.packages("Rcpp")
+library(Rcpp)
+
+sourceCpp("rcpp_fizzbuzz.cpp")
+# assume error handling done in R already
 nv <- c(3, 5, 15, 11, 11.2)
 rcpp_fizzbuzz(nv)
 ```
