@@ -37,33 +37,34 @@ The FizzBuzz test is a common programming interview question used to establish i
 
 2. Use your FizzBuzz function to display the correct output for a variety of inputs, make sure to show what happens for both good and bad input. 
 
-Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each integer in the input. In each loop, the function cycles through 3 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; there is a nested conditional that tests if the item is equal to 0, and skips the rest of the loop if true. Otherwise it prints "FizzBuzz" and also skips the next 2 conditionals to loop through the next item. The next conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true.
+Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each object in the input. For each object, if it is not an integer another error message is thrown. In each loop, the function cycles through 3 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; there is a nested conditional that tests if the item is equal to 0, and skips the rest of the loop if true. Otherwise it prints "FizzBuzz" and also skips the next 2 conditionals to loop through the next item. The next conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true.
 
 ```{R}
 fizzbuzz <- function(input){
-  for (integer in input){
-    if (class(integer) != "numeric")
-      stop("Item in input should be a numeric type")
-    if (integer %% 3 == 0 & integer %% 5 == 0){
-      if (integer == 0){
+  if (is.vector(input) == FALSE) stop("Input should be a vector.")
+  for (number in input){
+    if (is.integer(number) == FALSE)
+      stop("Item in input should be an integer.")
+    if (number %% 3 == 0 & number %% 5 == 0){
+      if (number == 0){
         next
       } else {
         print("FizzBuzz")
         next
       }
     }
-    if (integer %% 3 == 0){
+    if (number %% 3 == 0){
       print("Fizz")
     }
-    if (integer %% 5 == 0){
+    if (number %% 5 == 0){
       print("Buzz")
     }
   }
 }
 
-list_1 <- c(3, 15, 5, 9, 9.1)
+list_1 <- c(3, 15, 5, 9)
 fizzbuzz(list_1)
-fizzbuzz(3, 5)
+fizzbuzz(3)
 fizzbuzz("cat")
 ```
 
