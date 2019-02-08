@@ -37,35 +37,48 @@ The FizzBuzz test is a common programming interview question used to establish i
 
 2. Use your FizzBuzz function to display the correct output for a variety of inputs, make sure to show what happens for both good and bad input. 
 
-Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each object in the input. For each object, if it is not an integer another error message is thrown. In each loop, the function cycles through 3 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; there is a nested conditional that tests if the item is equal to 0, and skips the rest of the loop if true. Otherwise it prints "FizzBuzz" and also skips the next 2 conditionals to loop through the next item. The next conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true.
+Input must be a vector object otherwise an error message is returned. The function uses a for loop that goes through each object in the input. For each object, if it is not an integer another error message is thrown. In each loop, the function cycles through 4 conditional statements that utilize the modulo operation. The first conditional tests if the item is a multiple of both 3 and 5; if true it tests if the object is 0; if 0 it prints that value and skips the rest of the if statements via next; if it is a multiple of 3 and 5, but is not 0 then "FizzBuzz" is printed and skips the rest of the if statements via next. The next 2 conditionals test for only a multiple of 3 or 5 respectively and prints the proper response if true. The last conditional tests if it is neither a multiple of 3 and 5, and prints the number if true.
 
 ```{R}
 fizzbuzz <- function(input){
+  # if input is not a vector, return error
   if (is.vector(input) == FALSE) stop("Input should be a vector.")
+  # for loop to iterate through numbers in vector object
   for (number in input){
+    # if number is not an integer, return error
     if (is.integer(number) == FALSE)
       stop("Item in input should be an integer.")
+    # test if number is multiple of 3 and 5
     if (number %% 3 == 0 & number %% 5 == 0){
+      # if number is equal to 0, print 0 and skip rest of iteration
       if (number == 0){
+        print(0)
         next
+        # otherwise print FizzBuzz and now skip rest of iteration
       } else {
         print("FizzBuzz")
         next
       }
     }
+    # test if number is only multiple of 3
     if (number %% 3 == 0){
       print("Fizz")
     }
+    # test if number is only multiple of 5
     if (number %% 5 == 0){
       print("Buzz")
+    }
+    # test if number is neither multiple of 3 and 5
+    if (number %% 5 != 0 & number %% 3 != 0){
+      print(number)
     }
   }
 }
 
-list_1 <- c(3, 15, 5, 9)
+# create vector of integer numbers
+list_1 <- c(3L, 15L, 5L, 9L, 7L, 0L)
 fizzbuzz(list_1)
 fizzbuzz(3)
-fizzbuzz("cat")
 ```
 
 ## Q3. Rcpp
@@ -91,13 +104,15 @@ void rcpp_fizzbuzz(NumericVector input){
       lineprinted = TRUE;
     }
     if (lineprinted == TRUE) {
-      Rprintf(\" \\n\");
+      Rcout << \" \\n\";
+    } else {
+      Rcout << input[i] << \" \\n\";
     }
   }
 }"
 
 sourceCpp(code = src)
-nv <- c(3, 5, 15, 11)
+nv <- c(3, 5, 15, 11, 11.2)
 rcpp_fizzbuzz(nv)
 ```
 
