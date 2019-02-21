@@ -93,22 +93,90 @@ The SQLite database `/home/m280data/la_parking/LA_Parking_Citations.sqlite` on t
 ln -sf /home/m280data/nyc_parking/NYParkingViolations.csv NYParkingViolations.csv
 ```
 
-1. How many tickets are in this data set? Which time period do these tickets span? Which years have most data?
 ```{r}
+# reading in data and editing header names
 library("tidyverse")
-system.time({nyc = read_csv("NYParkingViolations.csv")})
+library("lubridate")
+system.time({
+  nyc <- read_csv("NYParkingViolations.csv") %>%
+    setNames(str_replace_all(names(.)," ", "_")) %>%
+    mutate(Issue_Date = mdy(Issue_Date)) %>% 
+    mutate(Issue_Day = day(Issue_Date),
+           Issue_Month = month(Issue_Date),
+           Issue_Year = year(Issue_Date),
+           Issue_WDay = wday(Issue_Date, label=TRUE))
+})
+
+# creating database
+library("DBI")
+library("RSQLite")
+if (Sys.info()[["sysname"]] == "Linux") {
+  db <- dbConnect(RSQLite::SQLite(), 
+                  dbname = "/home/m280data/nyc_parking/NYParkingViolations.sqlite")
+} else if (Sys.info()[["sysname"]] == "Darwin") {
+  db <- dbConnect(RSQLite::SQLite(), 
+                  dbname = "./NYParkingViolations.sqlite")
+}
+# dbWriteTable(db, "nyc", nyc, overwrite = TRUE)
+dbListTables(db)
 ```
+
+1. How many tickets are in this data set? Which time period do these tickets span? Which years have most data?
+
+```{r}
+# creating object from database
+nyc_sql <- dplyr::tbl(db, "nyc")
+range <- range(nyc$Issue_Date)
+year <- nyc$Issue_Date %>% year() %>% table()
+ticket <- nyc_sql %>% summarize(n = n())
+```
+There are 9,095,621 tickets in this dataset. These tickets span from 1970-12-18 to 2069-12-23. The year with the most tickets is 2014 with 4,716,512 entries. The year with the 2nd most is 2013 with 4,379,109 entries.
 
 0. When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?
 
 0. Which car makes received most citations?
 
+```{r}
+maker <- nyc_sql %>%
+  group_by(Vehicle_Make) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+maker
+```
+Ford received the most citations at 1,248,019 entries.
+
 0. How many different colors of cars were ticketed? Which color attracted most tickets?
+
+```{r}
+colorR <- unique(table(nyc$Vehicle_Color))
+color <- nyc_sql %>%
+  group_by(Vehicle_Color) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+colorR
+color
+```
+White attracted the most tickets at 1,348,510 entries.
 
 0. What are the most common ticket types?
 
+```{r}
+type <- length(unique(nyc$Violation_Post_Code))
+type
+# is this the right variable to calculate? why nyc and not nyc_sql? typos?
+```
+
 0. How much money was collected on parking tickets in 2016, 2017 and 2018?
+```{r}
+y2016 <- filter(nyc, Issue_Year == 2016)
+m2016 <- y2016 %>%
+  summarize(n = sum(y2016$Violation_Code))
+m2016
+# is this the right thing to be summing?
+```
 
 0. If you've been ticketed in LA County, did you find your ticket in this data set?
+
+No, I have not been ticketed in LA County.
 
 0. Read the blog <http://www.brettrics.com/9-million-parking-tickets-la/> and try to reproduce plots using your data.
