@@ -36,15 +36,20 @@ ui <- fluidPage(
     # sidebar, has input code
     sidebarPanel(
 
-      # Input: Selector for choosing dataset ---- USE FOR PAY TYPE?
-      selectInput(inputId = "dataset",
-                  label = "Choose a dataset:",
-                  choices = c("rock", "pressure", "cars")),
+      # Input: Selector for choosing pay type
+#      selectInput(inputId = "paytype",
+#                  label = "Choose a pay type:",
+#                  choices = c("base", "overtime", "other")),
 
-      # Input: Numeric entry for number of obs to view ---- USE FOR N, USE FOR YEAR TOO?
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10)
+      # Input: Numeric entry for number of employees to view
+      numericInput(inputId = "n",
+                   label = "Number of employees to view",
+                   value = 10),
+      
+      # Input: Numeric entry for years to view
+      numericInput(inputId = "year",
+                   label = "Year to view",
+                   value = 2017)
     ),
 
     # panel for output
@@ -58,18 +63,17 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-  dataInput <- reactive({
-  getSymbols(input$symb, src = "google", 
-             from = input$dates[1],
-             to = input$dates[2],
-             auto.assign = FALSE)
-})
+  output$distPlot <- renderPlot({
 
-output$plot <- renderPlot({
-  chartSeries(dataInput(), theme = chartTheme("white"), 
-              type = "line", log.scale = input$log, TA = NULL)
-})
-  
+    x    <- employee$VARIABLE_NAME
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    hist(x, breaks = bins, col = "#75AADB", border = "white",
+         xlab = "Waiting time to next eruption (in mins)",
+         main = "Histogram of waiting times")
+
+    })
+
 }
 
 shinyApp(ui = ui, server = server)
@@ -117,7 +121,7 @@ if (Sys.info()[["sysname"]] == "Linux") {
   db <- dbConnect(RSQLite::SQLite(), 
                   dbname = "./NYParkingViolations.sqlite")
 }
-# dbWriteTable(db, "nyc", nyc, overwrite = TRUE)
+
 dbListTables(db)
 ```
 
@@ -129,6 +133,7 @@ nyc_sql <- dplyr::tbl(db, "nyc")
 range <- range(nyc$Issue_Date)
 year <- nyc$Issue_Date %>% year() %>% table()
 ticket <- nyc_sql %>% summarize(n = n())
+year
 ```
 There are 9,095,621 tickets in this dataset. These tickets span from 1970-12-18 to 2069-12-23. The year with the most tickets is 2014 with 4,716,512 entries. The year with the 2nd most is 2013 with 4,379,109 entries.
 
@@ -153,18 +158,20 @@ color <- nyc_sql %>%
   group_by(Vehicle_Color) %>%
   summarize(n = n()) %>%
   arrange(desc(n))
-colorR
 color
 ```
-White attracted the most tickets at 1,348,510 entries.
+White attracted the most tickets at 1,348,510 entries. While there are too many unique answers due to typos/variations of a single answer, some common colors also include grey, red, black, blue, and silver.
 
 0. What are the most common ticket types?
 
 ```{r}
-type <- length(unique(nyc$Violation_Post_Code))
+type <- nyc_sql %>%
+  group_by(Violation_Code) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
 type
-# is this the right variable to calculate? why nyc and not nyc_sql? typos?
 ```
+The most common ticket types are violation codes 38 and 21 at 1,243,443 and 1,239,103 entries respectively. Codes 14 (851,287 entries) and 37 (738,549 entries) were also common.
 
 0. How much money was collected on parking tickets in 2016, 2017 and 2018?
 ```{r}
