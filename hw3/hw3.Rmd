@@ -93,33 +93,16 @@ shinyApp(ui = ui, server = server)
 
 The SQLite database `/home/m280data/la_parking/LA_Parking_Citations.sqlite` on teaching server contains information about parking tickets in LA City. It was downloaded from [LA Open Data Portal](https://data.lacity.org/A-Well-Run-City/Parking-Citations/wjz9-h9np). Connect to the database and answer following questions using plots and summary statistics. In this exercise, you are **not** allowed to load whole data into memory. Use the _transform in database, plot in R_ strategy.
 
-```{bash}
-ln -sf /home/m280data/nyc_parking/NYParkingViolations.csv NYParkingViolations.csv
-```
-
 ```{r}
-# reading in data and editing header names
-library("tidyverse")
-library("lubridate")
-system.time({
-  nyc <- read_csv("NYParkingViolations.csv") %>%
-    setNames(str_replace_all(names(.)," ", "_")) %>%
-    mutate(Issue_Date = mdy(Issue_Date)) %>% 
-    mutate(Issue_Day = day(Issue_Date),
-           Issue_Month = month(Issue_Date),
-           Issue_Year = year(Issue_Date),
-           Issue_WDay = wday(Issue_Date, label=TRUE))
-})
-
 # creating database
 library("DBI")
 library("RSQLite")
 if (Sys.info()[["sysname"]] == "Linux") {
   db <- dbConnect(RSQLite::SQLite(), 
-                  dbname = "/home/m280data/nyc_parking/NYParkingViolations.sqlite")
+                  dbname = "/home/m280data/la_parking/LA_Parking_Citations.sqlite")
 } else if (Sys.info()[["sysname"]] == "Darwin") {
   db <- dbConnect(RSQLite::SQLite(), 
-                  dbname = "./NYParkingViolations.sqlite")
+                  dbname = "./LA_Parking_Citations.sqlite")
 }
 
 dbListTables(db)
@@ -129,58 +112,97 @@ dbListTables(db)
 
 ```{r}
 # creating object from database
-nyc_sql <- dplyr::tbl(db, "nyc")
-range <- range(nyc$Issue_Date)
-year <- nyc$Issue_Date %>% year() %>% table()
-ticket <- nyc_sql %>% summarize(n = n())
+la_sql <- dplyr::tbl(db, "latix")
+ticket <- la_sql %>% summarize(n = n())
+year <- la_sql %>%
+  group_by(Issue_Year) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+ticket
 year
+range <- la_sql %>%
+  group_by(Issue_Year, Issue_Month, Issue_Day) %>%
+  summarize(n = n())
+range
 ```
-There are 9,095,621 tickets in this dataset. These tickets span from 1970-12-18 to 2069-12-23. The year with the most tickets is 2014 with 4,716,512 entries. The year with the 2nd most is 2013 with 4,379,109 entries.
+There are 7,656,418 tickets in this dataset. The range is 2015-07-02 to 2018-03-26. The year with the most tickets is 2017 with 2,235,243 entries. The year with the 2nd most is 2016 with 2,177,956 entries.
 
 0. When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?
+
+```{r}
+hour <- la_sql %>%
+  group_by(Issue_Hour, Issue_Minute) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+weekday <- la_sql %>%
+  group_by(Issue_Wday) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+date <- la_sql %>%
+  group_by(Issue_Day) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+month <- la_sql %>%
+  group_by(Issue_Month) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+month
+date
+weekday
+hour
+```
+The time one is most likely to be ticketed is 12:10, weekday 3 (Wednesday?), 13th of the month, August. The least likely time is 22:37 (or 21:13), weekday 1 (Monday?, excluding NA entries), 31st of the month (excluding NA entries), February (excluding NA entries).
 
 0. Which car makes received most citations?
 
 ```{r}
-maker <- nyc_sql %>%
-  group_by(Vehicle_Make) %>%
+maker <- la_sql %>%
+  group_by(Make) %>%
   summarize(n = n()) %>%
   arrange(desc(n))
 maker
 ```
-Ford received the most citations at 1,248,019 entries.
+TOYT/Toyota received the most citations at 1,270,804 entries.
 
 0. How many different colors of cars were ticketed? Which color attracted most tickets?
 
 ```{r}
-colorR <- unique(table(nyc$Vehicle_Color))
-color <- nyc_sql %>%
-  group_by(Vehicle_Color) %>%
+color <- la_sql %>%
+  group_by(Color) %>%
   summarize(n = n()) %>%
   arrange(desc(n))
 color
 ```
-White attracted the most tickets at 1,348,510 entries. While there are too many unique answers due to typos/variations of a single answer, some common colors also include grey, red, black, blue, and silver.
+BK (Black?) attracted the most tickets at 1,652,621 entries. While there are too many unique answers presumably due to typos/variations of a single answer, some common colors also include WT (white?), GY (grey?), SL (silver?) and BL (blue?).
 
 0. What are the most common ticket types?
 
 ```{r}
-type <- nyc_sql %>%
+head(la_sql)
+type <- la_sql %>%
   group_by(Violation_Code) %>%
   summarize(n = n()) %>%
   arrange(desc(n))
 type
 ```
-The most common ticket types are violation codes 38 and 21 at 1,243,443 and 1,239,103 entries respectively. Codes 14 (851,287 entries) and 37 (738,549 entries) were also common.
+The most common ticket types are violation codes 80.69BS and 88.13B+ at 2,166,602 and 1,302,155 entries respectively. Codes 80.56E4+ (547,904 entries) and 80.58L (523,775 entries) were also common.
 
 0. How much money was collected on parking tickets in 2016, 2017 and 2018?
 ```{r}
-y2016 <- filter(nyc, Issue_Year == 2016)
-m2016 <- y2016 %>%
-  summarize(n = sum(y2016$Violation_Code))
+m2016 <- la_sql %>%
+  filter(Issue_Year == 2016) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
+m2017 <- la_sql %>%
+  filter(Issue_Year == 2017) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
+m2018 <- la_sql %>%
+  filter(Issue_Year == 2018) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
 m2016
-# is this the right thing to be summing?
+m2017
+m2018
 ```
+$152,145,538 was collected in 2016. $157,122,489 was collected in 2017. $138,875,787 was collected in 2018.
 
 0. If you've been ticketed in LA County, did you find your ticket in this data set?
 
