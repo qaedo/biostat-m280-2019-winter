@@ -17,66 +17,21 @@ The `/home/m280-data/la_payroll/City_Employee_Payroll.csv` file on teaching serv
 1. For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.
 
 ```{bash}
-ln -sf /home/m280-data/la_payroll/City_Employee_Payroll.csv City_Employee_Payroll.csv
+ln -sf /home/m280data/la_payroll/City_Employee_Payroll.csv City_Employee_Payroll.csv
 ```
 
 0. **Total payroll by LA City**. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.
 
 ```{r}
-library(shiny)
-employee <- convert("City_Employee_Payroll.csv", "City_Employee_Payroll.rds")
-ui <- fluidPage(
-
-  # app title
-  titlePanel("Payroll Visualization"),
-
-  # sidebar with input/output code
-  sidebarLayout(
-
-    # sidebar, has input code
-    sidebarPanel(
-
-      # Input: Selector for choosing pay type
-#      selectInput(inputId = "paytype",
-#                  label = "Choose a pay type:",
-#                  choices = c("base", "overtime", "other")),
-
-      # Input: Numeric entry for number of employees to view
-      numericInput(inputId = "n",
-                   label = "Number of employees to view",
-                   value = 10),
-      
-      # Input: Numeric entry for years to view
-      numericInput(inputId = "year",
-                   label = "Year to view",
-                   value = 2017)
-    ),
-
-    # panel for output
-    mainPanel(
-
-      # Output: Histogram ----
-      plotOutput(outputId = "distPlot")
-
-    )
-  )
-)
-
-server <- function(input, output) {
-  output$distPlot <- renderPlot({
-
-    x    <- employee$VARIABLE_NAME
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-    hist(x, breaks = bins, col = "#75AADB", border = "white",
-         xlab = "Waiting time to next eruption (in mins)",
-         main = "Histogram of waiting times")
-
-    })
-
-}
-
-shinyApp(ui = ui, server = server)
+library("rio")
+library("dplyr")
+library("magrittr")
+options(scipen = 999)
+employee <- read.csv("/home/m280data/la_payroll/City_Employee_Payroll.csv", header = TRUE)
+(employee %<>% select(Year, Department.Title, Job.Class.Title, Total.Payments, 
+                      Base.Pay, Overtime.Pay))
+employee$Other.Pay <- employee$Total.Payments - employee$Base.Pay - employee$Overtime.Pay
+saveRDS(employee, file = "City_Employee_Payroll.rds")
 ```
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
