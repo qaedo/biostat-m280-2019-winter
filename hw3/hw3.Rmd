@@ -26,12 +26,16 @@ ln -sf /home/m280data/la_payroll/City_Employee_Payroll.csv City_Employee_Payroll
 library("rio")
 library("dplyr")
 library("magrittr")
+library(reshape2)
 options(scipen = 999)
-employee <- read.csv("/home/m280data/la_payroll/City_Employee_Payroll.csv", header = TRUE)
+employee <- read.csv("/home/m280data/la_payroll/City_Employee_Payroll.csv", 
+                     stringsAsFactors = FALSE, header = TRUE)
 (employee %<>% select(Year, Department.Title, Job.Class.Title, Total.Payments, 
                       Base.Pay, Overtime.Pay))
 employee$Other.Pay <- employee$Total.Payments - employee$Base.Pay - employee$Overtime.Pay
+employee.long <- melt(data, id.vars = c("Year", "Department.Title", "Job.Class.Title"))
 saveRDS(employee, file = "City_Employee_Payroll.rds")
+saveRDS(employee.long, file = "City_Employee_Payroll_Long.rds")
 ```
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
@@ -164,3 +168,17 @@ $152,145,538 was collected in 2016. $157,122,489 was collected in 2017. $138,875
 No, I have not been ticketed in LA County.
 
 0. Read the blog <http://www.brettrics.com/9-million-parking-tickets-la/> and try to reproduce plots using your data.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+head(la_sql)
+la_sql %>%
+  mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
+  group_by(Issue_Date) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = Issue_Date, y = n, group = 1)) + 
+    geom_line() +
+    theme(axis.text.x = element_text(angle=45),
+          axis.text.y = element_text(angle=45))
+```
