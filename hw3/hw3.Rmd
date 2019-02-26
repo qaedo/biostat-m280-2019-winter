@@ -23,19 +23,35 @@ ln -sf /home/m280data/la_payroll/City_Employee_Payroll.csv City_Employee_Payroll
 0. **Total payroll by LA City**. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.
 
 ```{r}
-library("rio")
+#library("rio")
 library("dplyr")
 library("magrittr")
 library(reshape2)
+library(tidyverse)
 options(scipen = 999)
-employee <- read.csv("/home/m280data/la_payroll/City_Employee_Payroll.csv", 
-                     stringsAsFactors = FALSE, header = TRUE)
-(employee %<>% select(Year, Department.Title, Job.Class.Title, Total.Payments, 
-                      Base.Pay, Overtime.Pay))
-employee$Other.Pay <- employee$Total.Payments - employee$Base.Pay - employee$Overtime.Pay
-employee.long <- melt(data, id.vars = c("Year", "Department.Title", "Job.Class.Title"))
-saveRDS(employee, file = "City_Employee_Payroll.rds")
-saveRDS(employee.long, file = "City_Employee_Payroll_Long.rds")
+employee_1 <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
+  setNames(str_replace_all(names(.)," ", "_"))
+#(employee %<>% select(Year, Department_Title, Job_Class_Title, Total_Payments, 
+#                      Base_Pay, Overtime_Pay))
+#employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - employee$Overtime_Pay
+#employee.long <- melt(employee, id.vars = c("Year", "Department_Title", "Job_Class_Title"))
+#saveRDS(employee, file = "City_Employee_Payroll.rds")
+#saveRDS(employee.long, file = "City_Employee_Payroll_Long.rds")
+```
+
+```{r}
+library(tidyverse)
+library(reshape2)
+
+total_data <- employee %>%
+  group_by(Year) %>%
+  summarise(totalPay = sum(Total_Payments),
+            basePay = sum(Base_Pay),
+            overPay = sum(Overtime_Pay, na.rm = TRUE),
+            otherPay = sum(Other_Pay, na.rm = TRUE))
+as.data.frame(total_data)
+total_long <- melt(total_data, id.vars = "Year")
+saveRDS(total_long, file = "Question2Total.rds")
 ```
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
@@ -172,13 +188,19 @@ No, I have not been ticketed in LA County.
 ```{r}
 library(ggplot2)
 library(tidyverse)
-head(la_sql)
-la_sql %>%
-  mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
-  group_by(Issue_Date) %>%
-  summarize(n = n()) %>%
-  ggplot(aes(x = Issue_Date, y = n, group = 1)) + 
-    geom_line() +
-    theme(axis.text.x = element_text(angle=45),
-          axis.text.y = element_text(angle=45))
+library(lubridate)
+mymonths <- c("Jan","Feb","Mar",
+              "Apr","May","Jun",
+              "Jul","Aug","Sep",
+              "Oct","Nov","Dec")
+la_sql$Issue_Month <- mymonths[ la_sql$Issue_Month ]
+class(la_sql)
+# la_sql %>%
+#   mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
+#   group_by(Issue_Date) %>%
+#   summarize(n = n()) %>%
+#   ggplot(aes(x = Issue_Date, y = n, group = 1)) + 
+#     geom_line() +
+#     theme(axis.text.x = element_text(angle=45),
+#           axis.text.y = element_text(angle=45))
 ```
