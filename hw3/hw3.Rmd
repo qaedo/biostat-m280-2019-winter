@@ -45,13 +45,36 @@ library(reshape2)
 
 total_data <- employee %>%
   group_by(Year) %>%
-  summarise(totalPay = sum(Total_Payments),
-            basePay = sum(Base_Pay),
+  summarise(totalPay = sum(Total_Payments, na.rm = TRUE),
+            basePay = sum(Base_Pay, na.rm = TRUE),
             overPay = sum(Overtime_Pay, na.rm = TRUE),
             otherPay = sum(Other_Pay, na.rm = TRUE))
 as.data.frame(total_data)
 total_long <- melt(total_data, id.vars = "Year")
 saveRDS(total_long, file = "Question2Total.rds")
+```
+
+```{r}
+library(tidyverse)
+library(reshape2)
+
+total_data_2 <- employee %>%
+  group_by(Year, Department_Title) %>%
+  summarise(totalPay = sum(Total_Payments, na.rm = TRUE),
+            basePay = sum(Base_Pay, na.rm = TRUE),
+            overPay = sum(Overtime_Pay, na.rm = TRUE),
+            otherPay = sum(Other_Pay, na.rm = TRUE))
+as.data.frame(total_data_2)
+total_long_2 <- melt(total_data_2, id.vars = c("Year", "Department_Title"))
+    Q5 <- total_long_2 %>%
+      filter(Year == 2017, variable == "totalPay") %>%
+      group_by(Department_Title) %>%
+      arrange(desc(value)) %>%
+      head(10)
+    Q5
+    test <- subset(total_long_2, total_long_2$Department_Title %in% Q5$Department_Title & Year == 2017)
+    test
+#saveRDS(total_long, file = "Question5Total.rds")
 ```
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
