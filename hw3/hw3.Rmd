@@ -29,13 +29,13 @@ library("magrittr")
 library(reshape2)
 library(tidyverse)
 options(scipen = 999)
-employee_1 <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
+employee <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
   setNames(str_replace_all(names(.)," ", "_"))
-#(employee %<>% select(Year, Department_Title, Job_Class_Title, Total_Payments, 
-#                      Base_Pay, Overtime_Pay))
-#employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - employee$Overtime_Pay
+(employee %<>% select(Year, Department_Title, Record_Number, Job_Class_Title,
+                      Total_Payments, Base_Pay, Overtime_Pay))
+employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - employee$Overtime_Pay
 #employee.long <- melt(employee, id.vars = c("Year", "Department_Title", "Job_Class_Title"))
-#saveRDS(employee, file = "City_Employee_Payroll.rds")
+saveRDS(employee, file = "City_Employee_Payroll.rds")
 #saveRDS(employee.long, file = "City_Employee_Payroll_Long.rds")
 ```
 
