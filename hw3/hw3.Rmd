@@ -27,7 +27,7 @@ The `/home/m280-data/la_payroll/City_Employee_Payroll.csv` file on teaching serv
 0. Visualize any other information you are interested in.
 
 0. Publish your Shiny app to <https://www.shinyapps.io> and share the link.
- https://qedo.shinyapps.io/shinyapp/
+ https://qedo.shinyapps.io/shiny/
 
 ## Q2 LA City Parking War
 
@@ -51,6 +51,7 @@ if (Sys.info()[["sysname"]] == "Linux") {
 ```{r}
 # creating object from database
 la_sql <- dplyr::tbl(db, "latix")
+library("tidyverse")
 ticket <- la_sql %>% summarize(n = n())
 year <- la_sql %>%
   group_by(Issue_Year) %>%
@@ -68,6 +69,7 @@ There are 7,656,418 tickets in this dataset. The range is 2015-07-02 to 2018-03-
 0. When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?
 
 ```{r}
+library("tidyverse")
 hour <- la_sql %>%
   group_by(Issue_Hour, Issue_Minute) %>%
   summarize(n = n()) %>%
@@ -94,6 +96,7 @@ The time one is most likely to be ticketed is 12:10, weekday 3 (Wednesday?), 13t
 0. Which car makes received most citations?
 
 ```{r}
+library("tidyverse")
 maker <- la_sql %>%
   group_by(Make) %>%
   summarize(n = n()) %>%
@@ -105,6 +108,7 @@ TOYT/Toyota received the most citations at 1,270,804 entries.
 0. How many different colors of cars were ticketed? Which color attracted most tickets?
 
 ```{r}
+library("tidyverse")
 color <- la_sql %>%
   group_by(Color) %>%
   summarize(n = n()) %>%
@@ -116,7 +120,7 @@ BK (Black?) attracted the most tickets at 1,652,621 entries. While there are too
 0. What are the most common ticket types?
 
 ```{r}
-head(la_sql)
+library("tidyverse")
 type <- la_sql %>%
   group_by(Violation_Code) %>%
   summarize(n = n()) %>%
@@ -127,6 +131,7 @@ The most common ticket types are violation codes 80.69BS and 88.13B+ at 2,166,60
 
 0. How much money was collected on parking tickets in 2016, 2017 and 2018?
 ```{r}
+library("tidyverse")
 m2016 <- la_sql %>%
   filter(Issue_Year == 2016) %>%
   summarize(n = sum(Fine_amount), na.rm = TRUE)
