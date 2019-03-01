@@ -16,66 +16,7 @@ The `/home/m280-data/la_payroll/City_Employee_Payroll.csv` file on teaching serv
 
 1. For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.
 
-```{bash}
-ln -sf /home/m280data/la_payroll/City_Employee_Payroll.csv City_Employee_Payroll.csv
-```
-
 0. **Total payroll by LA City**. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.
-
-```{r}
-#library("rio")
-library("dplyr")
-library("magrittr")
-library(reshape2)
-library(tidyverse)
-options(scipen = 999)
-employee <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
-  setNames(str_replace_all(names(.)," ", "_"))
-(employee %<>% select(Year, Department_Title, Record_Number, Job_Class_Title,
-                      Total_Payments, Base_Pay, Overtime_Pay))
-employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - employee$Overtime_Pay
-#employee.long <- melt(employee, id.vars = c("Year", "Department_Title", "Job_Class_Title"))
-saveRDS(employee, file = "City_Employee_Payroll.rds")
-#saveRDS(employee.long, file = "City_Employee_Payroll_Long.rds")
-```
-
-```{r}
-library(tidyverse)
-library(reshape2)
-
-total_data <- employee %>%
-  group_by(Year) %>%
-  summarise(totalPay = sum(Total_Payments, na.rm = TRUE),
-            basePay = sum(Base_Pay, na.rm = TRUE),
-            overPay = sum(Overtime_Pay, na.rm = TRUE),
-            otherPay = sum(Other_Pay, na.rm = TRUE))
-as.data.frame(total_data)
-total_long <- melt(total_data, id.vars = "Year")
-saveRDS(total_long, file = "Question2Total.rds")
-```
-
-```{r}
-library(tidyverse)
-library(reshape2)
-
-total_data_2 <- employee %>%
-  group_by(Year, Department_Title) %>%
-  summarise(totalPay = sum(Total_Payments, na.rm = TRUE),
-            basePay = sum(Base_Pay, na.rm = TRUE),
-            overPay = sum(Overtime_Pay, na.rm = TRUE),
-            otherPay = sum(Other_Pay, na.rm = TRUE))
-as.data.frame(total_data_2)
-total_long_2 <- melt(total_data_2, id.vars = c("Year", "Department_Title"))
-    Q5 <- total_long_2 %>%
-      filter(Year == 2017, variable == "totalPay") %>%
-      group_by(Department_Title) %>%
-      arrange(desc(value)) %>%
-      head(10)
-    Q5
-    test <- subset(total_long_2, total_long_2$Department_Title %in% Q5$Department_Title & Year == 2017)
-    test
-#saveRDS(total_long, file = "Question5Total.rds")
-```
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
 
@@ -86,6 +27,7 @@ total_long_2 <- melt(total_data_2, id.vars = c("Year", "Department_Title"))
 0. Visualize any other information you are interested in.
 
 0. Publish your Shiny app to <https://www.shinyapps.io> and share the link.
+ https://qedo.shinyapps.io/shinyapp/
 
 ## Q2 LA City Parking War
 
@@ -102,8 +44,6 @@ if (Sys.info()[["sysname"]] == "Linux") {
   db <- dbConnect(RSQLite::SQLite(), 
                   dbname = "./LA_Parking_Citations.sqlite")
 }
-
-dbListTables(db)
 ```
 
 1. How many tickets are in this data set? Which time period do these tickets span? Which years have most data?
@@ -211,19 +151,16 @@ No, I have not been ticketed in LA County.
 ```{r}
 library(ggplot2)
 library(tidyverse)
-library(lubridate)
-mymonths <- c("Jan","Feb","Mar",
-              "Apr","May","Jun",
-              "Jul","Aug","Sep",
-              "Oct","Nov","Dec")
-la_sql$Issue_Month <- mymonths[ la_sql$Issue_Month ]
-class(la_sql)
-# la_sql %>%
-#   mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
-#   group_by(Issue_Date) %>%
-#   summarize(n = n()) %>%
-#   ggplot(aes(x = Issue_Date, y = n, group = 1)) + 
-#     geom_line() +
-#     theme(axis.text.x = element_text(angle=45),
-#           axis.text.y = element_text(angle=45))
+
+la_sql %>%
+  mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
+  group_by(Issue_Date) %>%
+  filter(is.na(Issue_Date) == FALSE) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = Issue_Date, y = n, group = 1)) +
+    geom_line() +
+      ggtitle("Parking Tickets by Month") + labs(x = "Year and Month",
+                                             y = "Number of Tickets") +
+  theme(axis.text.x = element_text(angle=45),
+          axis.text.y = element_text(angle=45))
 ```
