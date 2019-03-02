@@ -1,0 +1,182 @@
+---
+title: "Biostat M280 Homework 3"
+subtitle: Due Mar 1 @ 11:59PM
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use tidyverse and bash to explore following two data sets.
+
+## Q1 LA City Employee Payroll
+
+The `/home/m280-data/la_payroll/City_Employee_Payroll.csv` file on teaching server contains payroll information of LA City employees in years 2013-2018. It was downloaded from [LA City Controller's Office](https://controllerdata.lacity.org/Payroll/City-Employee-Payroll/pazn-qyym). Make a Shiny app to facilitate visualization of this data. 
+
+1. For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.
+
+```{r, eval = FALSE}
+library("rio")
+library("dplyr")
+library("magrittr")
+library(reshape2)
+library(tidyverse)
+options(scipen = 999)
+employee <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
+  setNames(str_replace_all(names(.)," ", "_"))
+(employee %<>% select(Year, Department_Title, Record_Number, Job_Class_Title,
+                      Total_Payments, Base_Pay, Overtime_Pay))
+employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - 
+  employee$Overtime_Pay
+saveRDS(employee, file = "City_Employee_Payroll.rds")
+```
+The previous code was used to clean the employee payroll data.
+
+0. **Total payroll by LA City**. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.
+
+0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
+
+0. **Which departments earn most?** Visualize the mean or median payroll, with breakdown into base pay, overtime pay, and other pay, of top $n$ earning departments. User specifies $n$ (default 5), year (default 2018), and method (mean or median, default median).
+
+0. **Which departments cost most?** Visualize the total payroll, with breakdown into base pay, overtime pay, and other pay, of top $n$ expensive departments. User specifies $n$ (default 5) and year (default 2017).
+
+0. Visualize any other information you are interested in.
+
+0. Publish your Shiny app to <https://www.shinyapps.io> and share the link.
+ https://qedo.shinyapps.io/shiny/
+
+## Q2 LA City Parking War
+
+The SQLite database `/home/m280data/la_parking/LA_Parking_Citations.sqlite` on teaching server contains information about parking tickets in LA City. It was downloaded from [LA Open Data Portal](https://data.lacity.org/A-Well-Run-City/Parking-Citations/wjz9-h9np). Connect to the database and answer following questions using plots and summary statistics. In this exercise, you are **not** allowed to load whole data into memory. Use the _transform in database, plot in R_ strategy.
+
+```{r}
+# creating database
+library("DBI")
+library("RSQLite")
+if (Sys.info()[["sysname"]] == "Linux") {
+  db <- dbConnect(RSQLite::SQLite(), 
+                  dbname = "/home/m280data/la_parking/LA_Parking_Citations.sqlite")
+} else if (Sys.info()[["sysname"]] == "Darwin") {
+  db <- dbConnect(RSQLite::SQLite(), 
+                  dbname = "./LA_Parking_Citations.sqlite")
+}
+```
+
+1. How many tickets are in this data set? Which time period do these tickets span? Which years have most data?
+
+```{r}
+# creating object from database
+la_sql <- dplyr::tbl(db, "latix")
+library("tidyverse")
+ticket <- la_sql %>% summarize(n = n())
+year <- la_sql %>%
+  group_by(Issue_Year) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+ticket
+year
+range <- la_sql %>%
+  group_by(Issue_Year, Issue_Month, Issue_Day) %>%
+  summarize(n = n())
+range
+```
+There are 7,656,418 tickets in this dataset. The range is 2015-07-02 to 2018-03-26. The year with the most tickets is 2017 with 2,235,243 entries. The year with the 2nd most is 2016 with 2,177,956 entries.
+
+0. When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?
+
+```{r}
+hour <- la_sql %>%
+  group_by(Issue_Hour, Issue_Minute) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+weekday <- la_sql %>%
+  group_by(Issue_Wday) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+date <- la_sql %>%
+  group_by(Issue_Day) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+month <- la_sql %>%
+  group_by(Issue_Month) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+month
+date
+weekday
+hour
+```
+The time one is most likely to be ticketed is 12:10, weekday 3 (Wednesday?), 13th of the month, August. The least likely time is 22:37 (or 21:13), weekday 1 (Monday?, excluding NA entries), 31st of the month (excluding NA entries), February (excluding NA entries).
+
+0. Which car makes received most citations?
+
+```{r}
+maker <- la_sql %>%
+  group_by(Make) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+maker
+```
+TOYT/Toyota received the most citations at 1,270,804 entries.
+
+0. How many different colors of cars were ticketed? Which color attracted most tickets?
+
+```{r}
+color <- la_sql %>%
+  group_by(Color) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+color
+```
+BK (Black?) attracted the most tickets at 1,652,621 entries. While there are too many unique answers presumably due to typos/variations of a single answer, some common colors also include WT (white?), GY (grey?), SL (silver?) and BL (blue?).
+
+0. What are the most common ticket types?
+
+```{r}
+type <- la_sql %>%
+  group_by(Violation_Code) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+type
+```
+The most common ticket types are violation codes 80.69BS and 88.13B+ at 2,166,602 and 1,302,155 entries respectively. Codes 80.56E4+ (547,904 entries) and 80.58L (523,775 entries) were also common.
+
+0. How much money was collected on parking tickets in 2016, 2017 and 2018?
+```{r}
+m2016 <- la_sql %>%
+  filter(Issue_Year == 2016) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
+m2017 <- la_sql %>%
+  filter(Issue_Year == 2017) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
+m2018 <- la_sql %>%
+  filter(Issue_Year == 2018) %>%
+  summarize(n = sum(Fine_amount), na.rm = TRUE)
+m2016
+m2017
+m2018
+```
+$152,145,538 was collected in 2016. $157,122,489 was collected in 2017. $138,875,787 was collected in 2018.
+
+0. If you've been ticketed in LA County, did you find your ticket in this data set?
+
+No, I have not been ticketed in LA County.
+
+0. Read the blog <http://www.brettrics.com/9-million-parking-tickets-la/> and try to reproduce plots using your data.
+
+```{r}
+library(ggplot2)
+
+la_sql %>%
+  mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%
+  group_by(Issue_Date) %>%
+  filter(is.na(Issue_Date) == FALSE) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(x = Issue_Date, y = n, group = 1)) +
+    geom_line() +
+      ggtitle("Parking Tickets by Month") + labs(x = "Year and Month",
+                                             y = "Number of Tickets") +
+  theme(axis.text.x = element_text(angle=45),
+          axis.text.y = element_text(angle=45))
+```
