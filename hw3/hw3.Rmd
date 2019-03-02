@@ -16,6 +16,23 @@ The `/home/m280-data/la_payroll/City_Employee_Payroll.csv` file on teaching serv
 
 1. For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.
 
+```{r, eval = FALSE}
+library("rio")
+library("dplyr")
+library("magrittr")
+library(reshape2)
+library(tidyverse)
+options(scipen = 999)
+employee <- read_csv("/home/m280data/la_payroll/City_Employee_Payroll.csv") %>%
+  setNames(str_replace_all(names(.)," ", "_"))
+(employee %<>% select(Year, Department_Title, Record_Number, Job_Class_Title,
+                      Total_Payments, Base_Pay, Overtime_Pay))
+employee$Other_Pay <- employee$Total_Payments - employee$Base_Pay - 
+  employee$Overtime_Pay
+saveRDS(employee, file = "City_Employee_Payroll.rds")
+```
+The previous code was used to clean the employee payroll data.
+
 0. **Total payroll by LA City**. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.
 
 0. **Who earned most?** Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top $n$ highest paid LA City employees in a specific year. User specifies $n$ (default 10) and year (default 2017).
@@ -69,7 +86,6 @@ There are 7,656,418 tickets in this dataset. The range is 2015-07-02 to 2018-03-
 0. When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?
 
 ```{r}
-library("tidyverse")
 hour <- la_sql %>%
   group_by(Issue_Hour, Issue_Minute) %>%
   summarize(n = n()) %>%
@@ -96,7 +112,6 @@ The time one is most likely to be ticketed is 12:10, weekday 3 (Wednesday?), 13t
 0. Which car makes received most citations?
 
 ```{r}
-library("tidyverse")
 maker <- la_sql %>%
   group_by(Make) %>%
   summarize(n = n()) %>%
@@ -108,7 +123,6 @@ TOYT/Toyota received the most citations at 1,270,804 entries.
 0. How many different colors of cars were ticketed? Which color attracted most tickets?
 
 ```{r}
-library("tidyverse")
 color <- la_sql %>%
   group_by(Color) %>%
   summarize(n = n()) %>%
@@ -120,7 +134,6 @@ BK (Black?) attracted the most tickets at 1,652,621 entries. While there are too
 0. What are the most common ticket types?
 
 ```{r}
-library("tidyverse")
 type <- la_sql %>%
   group_by(Violation_Code) %>%
   summarize(n = n()) %>%
@@ -131,7 +144,6 @@ The most common ticket types are violation codes 80.69BS and 88.13B+ at 2,166,60
 
 0. How much money was collected on parking tickets in 2016, 2017 and 2018?
 ```{r}
-library("tidyverse")
 m2016 <- la_sql %>%
   filter(Issue_Year == 2016) %>%
   summarize(n = sum(Fine_amount), na.rm = TRUE)
@@ -155,7 +167,6 @@ No, I have not been ticketed in LA County.
 
 ```{r}
 library(ggplot2)
-library(tidyverse)
 
 la_sql %>%
   mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %>%

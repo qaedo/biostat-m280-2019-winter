@@ -194,7 +194,23 @@ $(document).ready(function () {
 <h2>Q1 LA City Employee Payroll</h2>
 <p>The <code>/home/m280-data/la_payroll/City_Employee_Payroll.csv</code> file on teaching server contains payroll information of LA City employees in years 2013-2018. It was downloaded from <a href="https://controllerdata.lacity.org/Payroll/City-Employee-Payroll/pazn-qyym">LA City Controller’s Office</a>. Make a Shiny app to facilitate visualization of this data.</p>
 <ol style="list-style-type: decimal">
-<li><p>For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.</p></li>
+<li>For efficiency of the Shiny app, you should first pre-process, pare down, tidy, and save the data, e.g., as a compressed RDS file, to be used in the app.</li>
+</ol>
+<pre class="r"><code>library(&quot;rio&quot;)
+library(&quot;dplyr&quot;)
+library(&quot;magrittr&quot;)
+library(reshape2)
+library(tidyverse)
+options(scipen = 999)
+employee &lt;- read_csv(&quot;/home/m280data/la_payroll/City_Employee_Payroll.csv&quot;) %&gt;%
+  setNames(str_replace_all(names(.),&quot; &quot;, &quot;_&quot;))
+(employee %&lt;&gt;% select(Year, Department_Title, Record_Number, Job_Class_Title,
+                      Total_Payments, Base_Pay, Overtime_Pay))
+employee$Other_Pay &lt;- employee$Total_Payments - employee$Base_Pay - 
+  employee$Overtime_Pay
+saveRDS(employee, file = &quot;City_Employee_Payroll.rds&quot;)</code></pre>
+<p>The previous code was used to clean the employee payroll data.</p>
+<ol start="0" style="list-style-type: decimal">
 <li><p><strong>Total payroll by LA City</strong>. Visualize the total LA City payroll of each year, with breakdown into base pay, overtime pay, and other pay.</p></li>
 <li><p><strong>Who earned most?</strong> Visualize the payroll information (total payment with breakdown into base pay, overtime pay, and other pay, Department, Job Title) of the top <span class="math inline">\(n\)</span> highest paid LA City employees in a specific year. User specifies <span class="math inline">\(n\)</span> (default 10) and year (default 2017).</p></li>
 <li><p><strong>Which departments earn most?</strong> Visualize the mean or median payroll, with breakdown into base pay, overtime pay, and other pay, of top <span class="math inline">\(n\)</span> earning departments. User specifies <span class="math inline">\(n\)</span> (default 5), year (default 2018), and method (mean or median, default median).</p></li>
@@ -280,8 +296,7 @@ range</code></pre>
 <ol start="0" style="list-style-type: decimal">
 <li>When (which hour, weekday, month day, and month) are you most likely to get a ticket and when are you least likely to get a ticket?</li>
 </ol>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-hour &lt;- la_sql %&gt;%
+<pre class="r"><code>hour &lt;- la_sql %&gt;%
   group_by(Issue_Hour, Issue_Minute) %&gt;%
   summarize(n = n()) %&gt;%
   arrange(desc(n))
@@ -371,8 +386,7 @@ month</code></pre>
 <ol start="0" style="list-style-type: decimal">
 <li>Which car makes received most citations?</li>
 </ol>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-maker &lt;- la_sql %&gt;%
+<pre class="r"><code>maker &lt;- la_sql %&gt;%
   group_by(Make) %&gt;%
   summarize(n = n()) %&gt;%
   arrange(desc(n))
@@ -398,8 +412,7 @@ maker</code></pre>
 <ol start="0" style="list-style-type: decimal">
 <li>How many different colors of cars were ticketed? Which color attracted most tickets?</li>
 </ol>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-color &lt;- la_sql %&gt;%
+<pre class="r"><code>color &lt;- la_sql %&gt;%
   group_by(Color) %&gt;%
   summarize(n = n()) %&gt;%
   arrange(desc(n))
@@ -425,8 +438,7 @@ color</code></pre>
 <ol start="0" style="list-style-type: decimal">
 <li>What are the most common ticket types?</li>
 </ol>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-type &lt;- la_sql %&gt;%
+<pre class="r"><code>type &lt;- la_sql %&gt;%
   group_by(Violation_Code) %&gt;%
   summarize(n = n()) %&gt;%
   arrange(desc(n))
@@ -452,8 +464,7 @@ type</code></pre>
 <ol start="0" style="list-style-type: decimal">
 <li>How much money was collected on parking tickets in 2016, 2017 and 2018?</li>
 </ol>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-m2016 &lt;- la_sql %&gt;%
+<pre class="r"><code>m2016 &lt;- la_sql %&gt;%
   filter(Issue_Year == 2016) %&gt;%
   summarize(n = sum(Fine_amount), na.rm = TRUE)
 m2017 &lt;- la_sql %&gt;%
@@ -498,7 +509,6 @@ m2016</code></pre>
 <li>Read the blog <a href="http://www.brettrics.com/9-million-parking-tickets-la/" class="uri">http://www.brettrics.com/9-million-parking-tickets-la/</a> and try to reproduce plots using your data.</li>
 </ol>
 <pre class="r"><code>library(ggplot2)
-library(tidyverse)
 
 la_sql %&gt;%
   mutate(Issue_Date = paste(Issue_Year, Issue_Month)) %&gt;%
